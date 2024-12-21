@@ -1,0 +1,34 @@
+/* 'style/login.css' */
+
+.login-option {
+    cursor: pointer;
+    padding: 10px 15px;
+    border-radius: 5px;
+    margin: 0 5px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.login-option.active {
+    background-color: #007bff;
+    color: #fff;
+}
+
+.card {
+    max-width: 400px;
+    width: 100%;
+}
+
+.view-results {
+    margin-top: 15px;
+}
+
+@media (max-width: 576px) {
+    .login-option {
+        font-size: 14px;
+        padding: 8px 12px;
+    }
+
+    .view-results {
+        width: 100%;
+    }
+}
