@@ -103,42 +103,11 @@ if ($result->num_rows > 0) {
     <!-- Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-    <style>
-        .profile-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-top: 2rem;
-        }
-        .profile-container img {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-        }
-        .info-container {
-            margin-top: 1rem;
-            width: 100%;
-            text-align: center;
-        }
-        .editable-field {
-            display: inline-flex;
-            align-items: center;
-        }
-        .editable-input {
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            padding: 2px;
-            margin-left: 5px;
-            display: none;
-        }
-        .save-button, .cancel-button {
-            display: none;
-        }
-    </style>
+    <link rel="stylesheet" href="styles/edit_profile.css">
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="#">Election Conductor</a>
+        <a class="navbar-brand" style="font-size: 24px; font-weight: bold;">Online Voting Management System</a>
         <div class="ml-auto">
             <form action="logout.php" method="POST">
                 <button type="submit" class="btn btn-danger"><i class="bi bi-box-arrow-right"></i> Logout</button>

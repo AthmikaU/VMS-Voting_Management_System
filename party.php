@@ -39,7 +39,7 @@ $candidates_query = "SELECT candidates.candidate_id, voters.first_name, voters.l
                      JOIN voters ON candidates.voter_id = voters.voter_id
                      WHERE candidates.party_id = ?";
 $candidates_stmt = $conn->prepare($candidates_query);
-$candidates_stmt->bind_param("s", $party_id);
+$candidates_stmt->bind_param("i", $party_id);
 $candidates_stmt->execute();
 $candidates_result = $candidates_stmt->get_result();
 
@@ -50,7 +50,7 @@ $constituencies_query = "SELECT constituency_id, constituency_name
                              SELECT constituency_id FROM candidates WHERE party_id = ?
                          )";
 $constituencies_stmt = $conn->prepare($constituencies_query);
-$constituencies_stmt->bind_param("s", $party_id);
+$constituencies_stmt->bind_param("i", $party_id);
 $constituencies_stmt->execute();
 $constituencies_result = $constituencies_stmt->get_result();
 
@@ -61,14 +61,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_candidate'])) {
     $experience = $_POST['experience'];
 
     // Check if the party has already a candidate in the chosen constituency
-    $check_query = "SELECT * FROM candidates WHERE party_id = ? AND constituency_id = ?";
+    $check_query = "SELECT * FROM candidates WHERE voter_id = ?";
     $check_stmt = $conn->prepare($check_query);
-    $check_stmt->bind_param("ss", $party_id, $constituency_id);
+    $check_stmt->bind_param("i", $voter_id);
     $check_stmt->execute();
     $check_result = $check_stmt->get_result();
 
     if ($check_result->num_rows > 0) {
-        echo "<script>alert('This party has already participated in this constituency.');</script>";
+        echo "<script>alert('This party/candidate has already participated in this constituency.');</script>";
     } else {
         // Insert new candidate
         $insert_query = "INSERT INTO candidates (voter_id, party_id, constituency_id, experience) 
@@ -76,6 +76,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_candidate'])) {
         $insert_stmt = $conn->prepare($insert_query);
         $insert_stmt->bind_param("ssss", $voter_id, $party_id, $constituency_id, $experience);
         $insert_stmt->execute();
+
+        // Insert into competes_in table
+        $competes_query = "INSERT INTO competes_in (constituency_id, party_id) VALUES (?, ?)";
+        $competes_stmt = $conn->prepare($competes_query);
+        $competes_stmt->bind_param("ii", $constituency_id, $party_id);
+        $competes_stmt->execute();
+
         echo "<script>alert('Candidate added successfully.');</script>";
     }
 }
@@ -101,44 +108,11 @@ if (isset($_GET['delete_candidate_id'])) {
     <title>Party Dashboard</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-    <style>
-        .profile-container {
-            display: flex;
-            align-items: flex-start;
-            margin-top: 2rem;
-            justify-content: flex-start;
-        }
-        .profile-container img, .profile-container .bi {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            margin-right: 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 80px;
-            background-color: #f0f0f0;
-            color: #007bff; /* Bootstrap primary color */
-        }
-        .profile-details {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        .profile-details p {
-            margin: 5px 0;
-        }
-        .btn-edit-profile {
-            margin-top: 1rem;
-        }
-        .candidate-table {
-            margin-top: 2rem;
-        }
-    </style>
+    <link rel="stylesheet" href="styles/party.css">
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="#">Election Conductor</a>
+        <a class="navbar-brand" style="font-size: 24px; font-weight: bold;">Online Voting Management System</a>
         <div class="ml-auto">
             <form action="logout.php" method="POST">
                 <button type="submit" class="btn btn-danger"><i class="bi bi-box-arrow-right"></i> Logout</button>

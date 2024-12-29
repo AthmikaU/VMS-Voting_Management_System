@@ -56,39 +56,78 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_candidate'])) {
     $party_id = $_POST['party_id'];
     $experience = $_POST['experience'];
 
-    // Check if the voter is already a candidate in the same constituency
-    $check_query = "SELECT * FROM candidates WHERE voter_id = ? AND constituency_id = ?";
-    $check_stmt = $conn->prepare($check_query);
-    $check_stmt->bind_param("ss", $voter_id, $constituency_id);
-    $check_stmt->execute();
-    $check_result = $check_stmt->get_result();
+    // Check if the party_id exists in the parties table
+    $check_party_query = "SELECT * FROM parties WHERE party_id = ?";
+    $check_party_stmt = $conn->prepare($check_party_query);
+    $check_party_stmt->bind_param("s", $party_id);
+    $check_party_stmt->execute();
+    $check_party_result = $check_party_stmt->get_result();
 
-    if ($check_result->num_rows > 0) {
-        echo "<script>alert('This person is already a candidate in this constituency!'); window.location.href='constituency_admin.php';</script>";
+    if ($check_party_result->num_rows == 0) {
+        echo "<script>alert('The specified Party ID does not exist. Please provide a valid Party ID.'); window.location.href='constituency_admin.php';</script>";
     } else {
-        // Check if there is already a candidate from the same party in the constituency
-        $party_check_query = "SELECT * FROM candidates WHERE party_id = ? AND constituency_id = ?";
-        $party_check_stmt = $conn->prepare($party_check_query);
-        $party_check_stmt->bind_param("ss", $party_id, $constituency_id);
-        $party_check_stmt->execute();
-        $party_check_result = $party_check_stmt->get_result();
+        // Check if the voter is already a candidate in any constituency
+        $check_voter_query = "SELECT * FROM candidates WHERE voter_id = ?";
+        $check_voter_stmt = $conn->prepare($check_voter_query);
+        $check_voter_stmt->bind_param("s", $voter_id);
+        $check_voter_stmt->execute();
+        $check_voter_result = $check_voter_stmt->get_result();
 
-        if ($party_check_result->num_rows > 0) {
-            echo "<script>alert('This party already has a candidate in this constituency!'); window.location.href='constituency_admin.php';</script>";
+        if ($check_voter_result->num_rows > 0) {
+            echo "<script>alert('This person is already a candidate in another constituency!'); window.location.href='constituency_admin.php';</script>";
         } else {
-            // Find the highest candidate ID and increment it
-            $id_query = "SELECT MAX(candidate_id) AS max_id FROM candidates";
-            $id_result = $conn->query($id_query);
-            $new_candidate_id = $id_result->fetch_assoc()['max_id'] + 1;
+            // Check if the voter is already a candidate in the same constituency
+            $check_query = "SELECT * FROM candidates WHERE voter_id = ? AND constituency_id = ?";
+            $check_stmt = $conn->prepare($check_query);
+            $check_stmt->bind_param("ss", $voter_id, $constituency_id);
+            $check_stmt->execute();
+            $check_result = $check_stmt->get_result();
 
-            // Insert the new candidate
-            $insert_query = "INSERT INTO candidates (candidate_id, voter_id, party_id, constituency_id, experience) 
-                             VALUES (?, ?, ?, ?, ?)";
-            $stmt = $conn->prepare($insert_query);
-            $stmt->bind_param("issss", $new_candidate_id, $voter_id, $party_id, $constituency_id, $experience);
-            $stmt->execute();
+            if ($check_result->num_rows > 0) {
+                echo "<script>alert('This person is already a candidate in this constituency!'); window.location.href='constituency_admin.php';</script>";
+            } else {
+                // Check if there is already a candidate from the same party in the constituency
+                $party_check_query = "SELECT * FROM candidates WHERE party_id = ? AND constituency_id = ?";
+                $party_check_stmt = $conn->prepare($party_check_query);
+                $party_check_stmt->bind_param("ss", $party_id, $constituency_id);
+                $party_check_stmt->execute();
+                $party_check_result = $party_check_stmt->get_result();
 
-            echo "<script>alert('Candidate added successfully.'); window.location.href='constituency_admin.php';</script>";
+                if ($party_check_result->num_rows > 0) {
+                    echo "<script>alert('This party already has a candidate in this constituency!'); window.location.href='constituency_admin.php';</script>";
+                } else {
+                    // Find the highest candidate ID and increment it
+                    $id_query = "SELECT MAX(candidate_id) AS max_id FROM candidates";
+                    $id_result = $conn->query($id_query);
+                    $new_candidate_id = $id_result->fetch_assoc()['max_id'] + 1;
+
+                    // Insert the new candidate
+                    $insert_query = "INSERT INTO candidates (candidate_id, voter_id, party_id, constituency_id, experience) 
+                                     VALUES (?, ?, ?, ?, ?)";
+                    $stmt = $conn->prepare($insert_query);
+                    $stmt->bind_param("iiiii", $new_candidate_id, $voter_id, $party_id, $constituency_id, $experience);
+                    $stmt->execute();
+
+                    // Check if the combination of constituency_id and party_id already exists in the competes_in table
+                    $check_competes_query = "SELECT * FROM competes_in WHERE constituency_id = ? AND party_id = ?";
+                    $check_competes_stmt = $conn->prepare($check_competes_query);
+                    $check_competes_stmt->bind_param("ii", $constituency_id, $party_id);
+                    $check_competes_stmt->execute();
+                    $check_competes_result = $check_competes_stmt->get_result();
+
+                    if ($check_competes_result->num_rows > 0) {
+                        echo "<script>alert('This party already competes in this constituency.'); window.location.href='constituency_admin.php';</script>";
+                    } else {
+                        // Insert into competes_in table to track the party's participation in the constituency
+                        $competes_query = "INSERT INTO competes_in (constituency_id, party_id) VALUES (?, ?)";
+                        $competes_stmt = $conn->prepare($competes_query);
+                        $competes_stmt->bind_param("ii", $constituency_id, $party_id);
+                        $competes_stmt->execute();
+                    }
+
+                    echo "<script>alert('Candidate added successfully.'); window.location.href='constituency_admin.php';</script>";
+                }
+            }
         }
     }
 }
@@ -97,7 +136,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_candidate'])) {
 if (isset($_GET['delete_candidate_id'])) {
     $candidate_id = $_GET['delete_candidate_id'];
 
-    // Delete the candidate
+    // First, delete from competes_in table
+    $delete_competes_query = "DELETE FROM competes_in WHERE constituency_id = (SELECT constituency_id FROM candidates WHERE candidate_id = ?)";
+    $delete_competes_stmt = $conn->prepare($delete_competes_query);
+    $delete_competes_stmt->bind_param("s", $candidate_id);
+    $delete_competes_stmt->execute();
+
+    // Then, delete from the candidates table
     $delete_query = "DELETE FROM candidates WHERE candidate_id = ?";
     $stmt = $conn->prepare($delete_query);
     $stmt->bind_param("s", $candidate_id);
@@ -105,6 +150,7 @@ if (isset($_GET['delete_candidate_id'])) {
 
     echo "<script>alert('Candidate deleted successfully.'); window.location.href='constituency_admin.php';</script>";
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -115,16 +161,11 @@ if (isset($_GET['delete_candidate_id'])) {
     <title>Constituency Admin Dashboard</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-    <style>
-        body { font-family: 'Arial', sans-serif; }
-        .navbar { margin-bottom: 2rem; }
-        .card { margin-bottom: 1rem; }
-        .table th, .table td { text-align: center; }
-    </style>
+    <link rel="stylesheet" href="styles/constituency_admin.css">
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="#">Election Conductor</a>
+        <a class="navbar-brand" style="font-size: 24px; font-weight: bold;">Online Voting Management System</a>
         <div class="ml-auto">
             <form action="logout.php" method="POST">
                 <button type="submit" class="btn btn-danger"><i class="bi bi-box-arrow-right"></i> Logout</button>
@@ -133,7 +174,7 @@ if (isset($_GET['delete_candidate_id'])) {
     </nav>
 
     <div class="container">
-        <h1 class="text-center mb-4">Welcome to <?php echo htmlspecialchars($constituency_name); ?> Constituency Dashboard</h1>
+        <h1 class="text-center mb-4">Welcome to '<?php echo htmlspecialchars($constituency_name); ?>' Constituency Dashboard!</h1>
 
         <div class="card">
             <div class="card-header"><h3>Constituency Information</h3></div>

@@ -19,16 +19,6 @@ CREATE TABLE IF NOT EXISTS constituencies (
     password VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS votes (
-    vote_id INT AUTO_INCREMENT PRIMARY KEY,
-    voter_id INT,
-    constituency_id INT,
-    party_id INT,
-    vote_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (voter_id) REFERENCES voters(voter_id),
-    FOREIGN KEY (constituency_id) REFERENCES constituencies(constituency_id),
-    FOREIGN KEY (party_id) REFERENCES parties(party_id)
-);
 
 INSERT INTO voters (voter_id, first_name, last_name, password)
 VALUES

@@ -46,35 +46,11 @@ if ($result->num_rows > 0) {
     <!-- Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-    <style>
-        .profile-container {
-            display: flex;
-            align-items: flex-start;
-            margin-top: 2rem;
-            justify-content: flex-start;
-        }
-        .profile-container img {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            margin-right: 2rem;
-        }
-        .profile-details {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        .profile-details p {
-            margin: 5px 0;
-        }
-        .btn-edit-profile {
-            margin-top: 1rem;
-        }
-    </style>
+    <link rel="stylesheet" href="styles/voter_dashboard.css">
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="#">Election Conductor</a>
+        <a class="navbar-brand" style="font-size: 24px; font-weight: bold;">Online Voting Management System</a>
         <div class="ml-auto">
             <form action="logout.php" method="POST">
                 <button type="submit" class="btn btn-danger"><i class="bi bi-box-arrow-right"></i> Logout</button>
@@ -96,7 +72,7 @@ if ($result->num_rows > 0) {
         </div>
 
         <div class="mt-4">
-            <button class="btn btn-success">Vote Now</button>
+            <button class="btn btn-success" onclick="location.href='ballot.php'">Vote Now</button>
         </div>
     </div>
 

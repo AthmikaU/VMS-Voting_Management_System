@@ -1,8 +1,7 @@
 <?php
-// Include database connection file
 $servername = "localhost";
 $username = "root";
-$password = "password"; // Update this if needed
+$password = "password"; 
 $dbname = "voting_system";
 
 // Create connection
@@ -24,7 +23,22 @@ session_start();
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $role = $_POST['role'];
 
-    if ($role === 'voter') {
+    // Admin login (hardcoded password)
+    if ($role === 'admin') {
+        $password = $conn->real_escape_string($_POST['password']);
+
+        // Check the fixed admin password
+        if ($password === 'admin123') { // Set your fixed admin password here
+            $_SESSION['role'] = 'admin';
+            header("Location: admin.php");
+            exit;
+        } else {
+            $error = "Invalid Admin credentials.";
+        }
+    }
+
+    // Voter login
+    elseif ($role === 'voter') {
         $voter_id = $conn->real_escape_string($_POST['voter_id']);
         $first_name = $conn->real_escape_string($_POST['first_name']);
         $last_name = $conn->real_escape_string($_POST['last_name']);
@@ -47,7 +61,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $error = "Please fill in all fields.";
         }
-    } elseif ($role === 'party') {
+    }
+
+    // Party login
+    elseif ($role === 'party') {
         $party_id = $conn->real_escape_string($_POST['party_id']);
         $password = $conn->real_escape_string($_POST['password']);
 
@@ -68,7 +85,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $error = "Please fill in all fields.";
         }
-    } elseif ($role === 'constituency') {
+    }
+
+    // Constituency login
+    elseif ($role === 'constituency') {
         $constituency_id = $conn->real_escape_string($_POST['constituency_id']);
         $password = $conn->real_escape_string($_POST['password']);
 
@@ -91,7 +111,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -100,45 +119,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Page</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .login-card {
-            max-width: 400px;
-            margin: auto;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            background-color: #fff;
-        }
-        .login-card .nav-item {
-            width: 33.33%;
-            text-align: center;
-        }
-        .tab-content {
-            margin-top: 20px;
-        }
-        .view-results-btn {
-            margin-top: 30px; /* Spacing from login card */
-            text-align: center;
-        }
-        .view-results-btn a {
-            background-color: #e74c3c; /* Red color */
-            color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
-            text-decoration: none;
-        }
-        .view-results-btn a:hover {
-            background-color: #c0392b; /* Darker red on hover */
-        }
-    </style>
+    <link rel="stylesheet" href="styles/login.css">
 </head>
-<body class="bg-light">
-    <div class="container py-5">
+<body>
+    <div class="container">
         <div class="login-card">
             <h1 class="text-center mb-4">Login</h1>
 
             <!-- Nav Tabs for Role Selection -->
-            <ul class="nav nav-pills">
+            <ul class="nav nav-pills mb-3">
                 <li class="nav-item">
                     <a class="nav-link active" id="voter-tab" href="#voter" data-bs-toggle="pill">Voter</a>
                 </li>
@@ -209,6 +198,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             </div>
 
+            <!-- Error Message -->
             <?php if ($error): ?>
                 <div class="alert alert-danger mt-3">
                     <?php echo htmlspecialchars($error); ?>
@@ -216,11 +206,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
         </div>
 
-        <!-- View Results Button (separate, below the login card) -->
-        <div class="view-results-btn">
-            <a href="results.php" class="btn">View Results</a>
+        <!-- Modal Button -->
+        <div class="text-center mt-4">
+            <div class="view-results-btn">
+                <a href="results.php" class="btn">View Results</a>
+            </div>
+            <div class="admin-btn">
+                <button class="btn" data-bs-toggle="modal" data-bs-target="#adminModal">Admin Login</button>
+            </div>
         </div>
-    </div>
+
+        <!-- Admin Modal -->
+        <div class="modal fade" id="adminModal" tabindex="-1" aria-labelledby="adminModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="adminModalLabel">Admin Login</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form method="POST" action="">
+                            <input type="hidden" name="role" value="admin">
+                            <div class="mb-3">
+                                <label for="admin-password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="admin-password" name="password" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Login</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>

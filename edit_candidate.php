@@ -58,31 +58,11 @@ $constituencies_result = $conn->query($constituencies_query);
     <title>Edit Candidate</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-    <style>
-        .form-container {
-            margin-top: 2rem;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        .candidate-photo {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            object-fit: cover;
-            background-color: #f0f0f0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 50px;
-            color: #fff;
-            background-color: #007bff; /* Blue color */
-        }
-    </style>
+    <link rel="stylesheet" href="styles/edit_candidate.css">
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="#">Election Conductor</a>
+        <a class="navbar-brand" href="#">Online Voting Management System</a>
     </nav>
 
     <div class="container form-container">
