@@ -1,4 +1,3 @@
-
 body {
     background-color: #f9f9f9;
     font-family: Arial, sans-serif;
@@ -6,10 +5,6 @@ body {
 
 .container {
     margin-top: 50px;
-}
-
-.d-flex {
-    margin-bottom: 20px;
 }
 
 .table {
@@ -28,24 +23,44 @@ body {
     color: #ffffff;
 }
 
-.btn-danger {
+/* Radio button styles */
+.radio-container {
+    display: inline-block;
+    position: relative;
+}
+
+.vote-radio {
+    display: none; /* Hide the radio button */
+}
+
+.vote-label {
+    cursor: pointer;
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-align: center;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Default Vote button style */
+.vote-label.btn-danger {
     background-color: #e74c3c;
+    color: white;
     border: none;
 }
 
-.btn-danger:hover {
+.vote-label.btn-danger:hover {
     background-color: #c0392b;
 }
 
-.btn-success {
+/* Checked Vote button style */
+.vote-radio:checked + .vote-label {
     background-color: #28a745;
+    color: white;
     border: none;
 }
 
-.btn-success:hover {
-    background-color: #218838;
-}
-
+/* Success alert */
 .alert-success {
     margin-top: 20px;
     background-color: #28a745;
@@ -54,6 +69,7 @@ body {
     text-align: center;
 }
 
+/* Logout button styles */
 .btn-logout {
     background-color: #dc3545;
     color: white;
