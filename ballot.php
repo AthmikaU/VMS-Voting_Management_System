@@ -103,13 +103,13 @@ if (isset($_GET['logout'])) {
 <body>
     <div class="container">
         <div class="d-flex justify-content-between align-items-center">
-            <h1 class="text-center">Ballot Paper </h1>
+            <h1 class="text-center">Ballot Paper</h1>
             <a href="ballot.php?logout=1" class="btn btn-logout">Logout</a>
         </div>
 
         <?php if (isset($_GET['success']) && isset($_GET['candidate_name'])): ?>
             <div class="alert alert-success">
-                Voted candidate: <?php echo htmlspecialchars($_GET['candidate_name']); ?> successfully!
+                Voted for: <?php echo htmlspecialchars($_GET['candidate_name']); ?> successfully!
             </div>
         <?php endif; ?>
 
@@ -123,14 +123,14 @@ if (isset($_GET['logout'])) {
             </thead>
             <tbody>
                 <?php while ($candidate = $candidateResult->fetch_assoc()): ?>
-                    <tr>
+                    <tr class="vote-row">
                         <td><?php echo htmlspecialchars($candidate['candidate_name']); ?></td>
                         <td><?php echo htmlspecialchars($candidate['party_name']); ?></td>
                         <td>
                             <?php if (!$hasVoted): ?>
                                 <form method="POST" style="display:inline;">
                                     <input type="hidden" name="candidate_id" value="<?php echo $candidate['candidate_id']; ?>">
-                                    <button type="submit" class="btn btn-danger">Vote</button>
+                                    <button type="submit" class="btn btn-danger vote-btn">Vote</button>
                                 </form>
                             <?php else: ?>
                                 <button class="btn btn-success" disabled>Voted</button>
@@ -145,5 +145,43 @@ if (isset($_GET['logout'])) {
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        // This script adds the 'voted-row' class to the clicked vote button
+        const voteButtons = document.querySelectorAll('.vote-btn');
+
+voteButtons.forEach(button => {
+    button.addEventListener('click', function(event) {
+        // Prevent the default form submission behavior
+        event.preventDefault();
+
+        // Get the row for the clicked button
+        const row = this.closest('tr');
+
+        // After clicking, mark the clicked row as selected (green)
+        row.classList.add('voted-row');  // Add green background to the row
+
+        // Disable all buttons and make them grey
+        voteButtons.forEach(btn => {
+            const btnRow = btn.closest('tr');
+            if (btn !== this) {
+                btn.classList.remove('btn-danger'); // Remove red color
+                btn.classList.add('btn-secondary'); // Add grey color
+                btn.disabled = true; // Disable button
+                btnRow.classList.add('disabled-row'); // Disable row
+            } else {
+                // For the selected button, change to 'voted-btn' style
+                btn.classList.add('voted-btn');
+            }
+        });
+
+        // Use a delay before submitting the form to ensure the style change is visible
+        setTimeout(() => {
+            this.closest('form').submit();
+        }, 100); // 100ms delay
+    });
+});
+
+
+    </script>
 </body>
 </html>

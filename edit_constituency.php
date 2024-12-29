@@ -19,7 +19,7 @@ if (!isset($_GET['candidate_id'])) {
 
 $candidate_id = $_GET['candidate_id'];
 
-// Fetch current candidate details, including the experience and party_id
+// Fetch current candidate details, including experience and current party
 $query = "SELECT candidates.candidate_id, voters.first_name, voters.last_name, candidates.constituency_id, constituencies.constituency_name, voters.address, candidates.experience, candidates.party_id 
           FROM candidates
           JOIN constituencies ON candidates.constituency_id = constituencies.constituency_id
@@ -44,19 +44,18 @@ if ($result->num_rows > 0) {
     exit();
 }
 
-// Fetch constituencies excluding those already registered by the same party
-$constituencies_query = "SELECT constituency_id, constituency_name 
-                         FROM constituencies
-                         WHERE constituency_id NOT IN (
-                             SELECT constituency_id 
-                             FROM candidates 
-                             WHERE party_id = ?
-                         )";
-$stmt_constituencies = $conn->prepare($constituencies_query);
-$stmt_constituencies->bind_param("s", $party_id);
-$stmt_constituencies->execute();
-$constituencies_result = $stmt_constituencies->get_result();
-
+// Fetch parties excluding those already registered in the same constituency
+$parties_query = "SELECT party_id, party_name 
+                  FROM parties
+                  WHERE party_id NOT IN (
+                      SELECT party_id 
+                      FROM candidates 
+                      WHERE constituency_id = ?
+                  )";
+$stmt_parties = $conn->prepare($parties_query);
+$stmt_parties->bind_param("s", $constituency_id);
+$stmt_parties->execute();
+$parties_result = $stmt_parties->get_result();
 ?>
 
 <!DOCTYPE html>
@@ -84,9 +83,9 @@ $constituencies_result = $stmt_constituencies->get_result();
             </div>
         </div>
 
-        <form action="update_candidate.php" method="POST">
+        <form action="update_constituency.php" method="POST">
             <input type="hidden" name="candidate_id" value="<?php echo htmlspecialchars($candidate_id); ?>">
-            <input type="hidden" name="party_id" value="<?php echo htmlspecialchars($party_id); ?>">
+            <input type="hidden" name="constituency_id" value="<?php echo htmlspecialchars($constituency_id); ?>">
 
             <div class="form-group">
                 <label for="first_name">First Name</label>
@@ -99,11 +98,11 @@ $constituencies_result = $stmt_constituencies->get_result();
             </div>
 
             <div class="form-group">
-                <label for="constituency">Constituency</label>
-                <select class="form-control" id="constituency" name="constituency" required>
-                    <?php while($constituency = $constituencies_result->fetch_assoc()): ?>
-                        <option value="<?php echo $constituency['constituency_id']; ?>" <?php echo ($constituency['constituency_id'] == $constituency_id) ? 'selected' : ''; ?>>
-                            <?php echo htmlspecialchars($constituency['constituency_name']); ?>
+                <label for="party">Party</label>
+                <select class="form-control" id="party" name="party_id" required>
+                    <?php while($party = $parties_result->fetch_assoc()): ?>
+                        <option value="<?php echo $party['party_id']; ?>" <?php echo ($party['party_id'] == $party_id) ? 'selected' : ''; ?>>
+                            <?php echo htmlspecialchars($party['party_name']); ?>
                         </option>
                     <?php endwhile; ?>
                 </select>
@@ -112,11 +111,11 @@ $constituencies_result = $stmt_constituencies->get_result();
             <!-- Experience field as text input -->
             <div class="form-group">
                 <label for="experience">Experience</label>
-                <input type="text" class="form-control" id="experience" name="experience" value="<?php echo htmlspecialchars($experience); ?>" required>
+                <input type="number" class="form-control" id="experience" name="experience" value="<?php echo htmlspecialchars($experience); ?>" required>
             </div>
 
             <button type="submit" class="btn btn-primary">Update Candidate</button>
-            <button type="button" class="btn btn-secondary ml-2" onclick="window.location.href='party.php'">Cancel</button>
+            <button type="button" class="btn btn-secondary ml-2" onclick="window.location.href='constituency_admin.php'">Cancel</button>
         </form>
     </div>
 
@@ -125,4 +124,4 @@ $constituencies_result = $stmt_constituencies->get_result();
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
-</html>
+</html> 

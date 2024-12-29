@@ -174,7 +174,7 @@ if (isset($_GET['delete_candidate_id'])) {
     </nav>
 
     <div class="container">
-        <h1 class="text-center mb-4">Welcome to '<?php echo htmlspecialchars($constituency_name); ?>' Constituency Dashboard!</h1>
+        <h1 class="text-center mb-4">Welcome to Constituency Dashboard!</h1>
 
         <div class="card">
             <div class="card-header"><h3>Constituency Information</h3></div>
@@ -204,7 +204,7 @@ if (isset($_GET['delete_candidate_id'])) {
                             <td><?php echo htmlspecialchars($candidate['party_name']); ?></td>
                             <td><?php echo htmlspecialchars($candidate['experience']); ?> years</td>
                             <td>
-                                <a href="edit_candidate.php?candidate_id=<?php echo htmlspecialchars($candidate['candidate_id']); ?>" class="btn btn-warning btn-sm">Edit</a>
+                                <a href="edit_constituency.php?candidate_id=<?php echo htmlspecialchars($candidate['candidate_id']); ?>" class="btn btn-warning btn-sm">Edit</a>
                                 <a href="?delete_candidate_id=<?php echo htmlspecialchars($candidate['candidate_id']); ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this candidate?')">Delete</a>
                             </td>
                         </tr>
